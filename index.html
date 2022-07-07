@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        section {
+            text-align: center;
+        }
+        p {
+            color: red;
+        }
+        .container {
+            display: flex; 
+            flex-wrap: wrap;
+            width: 100%;
+            padding: 10px;
+            justify-content: center;
+        }
+        .box {
+            width: 30%;
+            padding: 5px;
+        }
+        .box img {
+            width: 100%;
+        }
+        form {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-bottom: 1px solid gray;
+            padding: 10px;
+        }
+        input {
+            font: inherit;
+            border: 1px solid #ccc;
+            padding: 10px;
+        }
+        button {
+            background: rgb(60, 60, 249);
+            color: aliceblue;
+            border: none;
+            padding: 10px;
+            border-radius: 5px;
+            margin-left: 10px;
+        }
+        a, span {
+            text-decoration: none;
+            color: aliceblue;
+            background: rgb(26, 198, 228);
+            margin: 5px;
+            padding: 2px;
+            border-radius: 5px;
+        }
+        
+        [v-cloak] {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <section id="app" v-cloak>
+        <form action="#">
+            <input type="text" v-model="key" placeholder="Name of image">
+            <button @click="search">Search</button>
+        </form>
+        <div class="container">
+            <div class="box" v-for="img in imageUrl">
+                <img :src="img.largeImageURL" alt="">
+                <div class="action">
+                    <a :href="img.largeImageURL" target="_blank"> view </a>
+                    <span @click="downloadImg(img.largeImageURL)"> download </span>
+                </div>
+            </div>
+        </div>
+        <p v-if="imageUrl.length< 1 && isSearch">Not found!!!</p>
+    </section>
+</body>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<script src="https://unpkg.com/vue@next"></script>
+<script>
+    const app = Vue.createApp({
+        data() {
+            return {
+                api: 'https://pixabay.com/api/?key=23992488-cb17fda33fe6afd4dffba46e2&q=',
+                endUrl: '&image_type=photo',
+                key: '',
+                imageUrl: [],
+                isSearch: false
+            }
+        },
+        methods: {
+            search(){
+                this.isSearch = true;
+                axios.get(this.api+this.key.trim()+this.endUrl)
+                .then(response => {
+                    this.imageUrl = response.data.hits;
+                })
+            },
+            downloadImg(url) {
+                console.log('downloading', url); 
+                axios({
+                    url: url,
+                    method: 'GET',
+                    responseType: 'blob',
+                }).then((response) => {
+                     var fileURL = window.URL.createObjectURL(new Blob([response.data]));
+                     var fileLink = document.createElement('a');
+   
+                     fileLink.href = fileURL;
+                     fileLink.setAttribute('download', url);
+                     document.body.appendChild(fileLink);
+   
+                     fileLink.click();
+                });
+            },
+        }
+    });
+    app.mount('#app')
+</script>
+</html>
